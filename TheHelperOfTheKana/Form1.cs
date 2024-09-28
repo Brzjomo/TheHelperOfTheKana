@@ -1,19 +1,18 @@
 using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace TheHelperOfTheKana
 {
     public partial class Form1 : Form
     {
         private const string path = "assets";
-        private List<string> imagesPath = [];
+        private List<string> imagesPath = new List<string>();
         private int lastImageIndex = -1;
         private int score = 0;
         private int topScore = 0;
         private bool hideImage = false;
         private int type = 0;
+        private Dictionary<string, Image> images = new();
 
         public Form1()
         {
@@ -26,45 +25,21 @@ namespace TheHelperOfTheKana
             LoadImages();
         }
 
-        private void RenameFiles(string FolderPath)
-        {
-            if (Directory.Exists(FolderPath))
-            {
-                Debug.WriteLine("Exist !");
-                string[] files = Directory.GetFiles(FolderPath);
-                foreach (var file in files)
-                {
-                    var name = file.Replace(FolderPath + "\\", "");
-                    string[] temp = name.Split('.');
-                    var extension = temp[^1];
-
-                    StringBuilder sb = new StringBuilder();
-                    foreach (var l in temp)
-                    {
-                        sb.Append(l);
-                        sb.Append('.');
-                    }
-                    name = sb.ToString();
-
-                    string[] temp2 = name.Split('-');
-                    name = temp2[0] + ".";
-                    string newName = FolderPath + "\\" + name + extension;
-                    File.Move(file, newName);
-                }
-                Debug.WriteLine("Done !");
-            }
-            else
-            {
-                Debug.WriteLine("Foler Not Exists !");
-            }
-        }
-
         private async void LoadImages()
         {
             if (Directory.Exists(path))
             {
                 string[] files = Directory.GetFiles(path);
-                imagesPath = [.. files];
+
+                foreach (var file in files)
+                {
+                    if (!images.ContainsKey(file))
+                    {
+                        images[file] = Image.FromFile(file);
+                    }
+                }
+
+                imagesPath = new List<string>(images.Keys);
 
                 await LoadRandomImage();
             }
@@ -76,9 +51,9 @@ namespace TheHelperOfTheKana
 
         private Task LoadImage(string path)
         {
-            if (File.Exists(path))
+            if (images.ContainsKey(path))
             {
-                PB_1.Image = Image.FromFile(path);
+                PB_1.Image = images[path];
             }
             else
             {
@@ -92,7 +67,7 @@ namespace TheHelperOfTheKana
         {
             byte[] buffer = Guid.NewGuid().ToByteArray();
             int iSeed = BitConverter.ToInt32(buffer, 0);
-            Random random = new(iSeed);
+            Random random = new Random(iSeed);
 
             int imgCount = imagesPath.Count;
             var index = random.Next(imgCount);
@@ -228,7 +203,8 @@ namespace TheHelperOfTheKana
             if (RB_NotHideImage.Checked)
             {
                 LoadImage(imagePath);
-            } else
+            }
+            else
             {
                 PB_1.Image = null;
             }
