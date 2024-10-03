@@ -33,7 +33,7 @@
             LB_Romaji = new Label();
             LB_Score = new Label();
             BTN_No = new Button();
-            BT_Yes = new Button();
+            BTN_Yes = new Button();
             PB_1 = new PictureBox();
             tabPage2 = new TabPage();
             groupBox1 = new GroupBox();
@@ -66,7 +66,7 @@
             tabPage1.Controls.Add(LB_Romaji);
             tabPage1.Controls.Add(LB_Score);
             tabPage1.Controls.Add(BTN_No);
-            tabPage1.Controls.Add(BT_Yes);
+            tabPage1.Controls.Add(BTN_Yes);
             tabPage1.Controls.Add(PB_1);
             tabPage1.Location = new Point(4, 30);
             tabPage1.Name = "tabPage1";
@@ -113,16 +113,16 @@
             BTN_No.UseVisualStyleBackColor = true;
             BTN_No.Click += BTN_No_Click;
             // 
-            // BT_Yes
+            // BTN_Yes
             // 
-            BT_Yes.Cursor = Cursors.Hand;
-            BT_Yes.Location = new Point(6, 416);
-            BT_Yes.Name = "BT_Yes";
-            BT_Yes.Size = new Size(159, 59);
-            BT_Yes.TabIndex = 1;
-            BT_Yes.Text = "记得";
-            BT_Yes.UseVisualStyleBackColor = true;
-            BT_Yes.Click += BT_Yes_Click;
+            BTN_Yes.Cursor = Cursors.Hand;
+            BTN_Yes.Location = new Point(6, 416);
+            BTN_Yes.Name = "BTN_Yes";
+            BTN_Yes.Size = new Size(159, 59);
+            BTN_Yes.TabIndex = 1;
+            BTN_Yes.Text = "记得";
+            BTN_Yes.UseVisualStyleBackColor = true;
+            BTN_Yes.Click += BT_Yes_Click;
             // 
             // PB_1
             // 
@@ -242,7 +242,7 @@
         private TabPage tabPage2;
         private PictureBox PB_1;
         private Button BTN_No;
-        private Button BT_Yes;
+        private Button BTN_Yes;
         private Label LB_Score;
         private TabPage tabPage3;
         private Label LB_TopScore;

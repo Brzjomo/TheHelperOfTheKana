@@ -211,5 +211,31 @@ namespace TheHelperOfTheKana
 
             lastImageIndex = imagesPath.IndexOf(imagePath);
         }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            // 检查是否按下 F5 键
+            if (keyData == Keys.Left)
+            {
+                BTN_Yes.PerformClick();
+                return true;
+            }
+            else if (keyData == Keys.Right)
+            {
+                BTN_No.PerformClick();
+                return true;
+            }
+            else if (keyData == Keys.Up)
+            {
+                LB_Romaji_Click(LB_Romaji, new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
+                return true;
+            }
+            else if (keyData == Keys.Down)
+            {
+                PB_1_Click(PB_1, new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0));
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
     }
 }
