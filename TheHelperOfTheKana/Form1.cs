@@ -6,13 +6,25 @@ namespace TheHelperOfTheKana
     public partial class Form1 : Form
     {
         private const string path = "assets";
-        private List<string> imagesPath = new List<string>();
+        private List<string> imagesPath = [];
         private int lastImageIndex = -1;
         private int score = 0;
         private int topScore = 0;
         private bool hideImage = false;
         private int type = 0;
-        private Dictionary<string, Image> images = new();
+        private static List<string> unvoicedRomaji = ["a", "i", "u", "e", "o", "ka", "ki", "ku", "ke", "ko", "sa", "si", "su", "se", "so", "ta", "ti", "tu", "te", "to",
+            "na", "ni", "nu", "ne", "no", "ha", "hi", "hu", "he", "ho", "ma", "mi", "mu", "me", "mo", "ya", "yu", "yo", "ra", "ri", "ru", "re", "ro", "wa", "wo", "nn"];
+        private static List<string> voicedRomaji = ["ga", "gi", "gu", "ge", "go", "za", "zi", "zu", "ze", "zo", "da", "di", "du", "de", "do", "ba", "bi", "bu", "be", "bo"];
+        private static List<string> semiVoicedRomaji = ["pa", "pi", "pu", "pe", "po"];
+        private static List<string> allVoicedRomaji = [.. voicedRomaji, .. semiVoicedRomaji];
+        private static List<string> allRomaji = [];
+        private Dictionary<string, Image> images = [];
+        private Dictionary<string, Image> imgUnvoicedHiragana = [];
+        private Dictionary<string, Image> imgUnvoicedKatakana = [];
+        private Dictionary<string, Image> imgVoicedHiragana = [];
+        private Dictionary<string, Image> imgVoicedKatakana = [];
+        private Dictionary<string, Image> imgSemiVoicedHiragana = [];
+        private Dictionary<string, Image> imgSemiVoicedKatakana = [];
 
         public Form1()
         {
@@ -21,8 +33,73 @@ namespace TheHelperOfTheKana
             LB_Score.Text = "0";
             LB_TopScore.Text = "0";
             RB_NotHideImage.Checked = true;
+            CB_Unvoiced.Checked = true;
+            RB_All.Checked = true;
 
             LoadImages();
+        }
+
+        private void AddImageToProperDictionary(string file)
+        {
+            var name = Path.GetFileNameWithoutExtension(file);
+            var romaji = ExtractRomajiFromName(name);
+            List<List<string>> temp = [unvoicedRomaji, voicedRomaji, semiVoicedRomaji];
+            int index = -1;
+
+            if (name.EndsWith('1'))
+            {
+                for (int i = 0; i < temp.Count; i++)
+                {
+                    foreach (var item in temp[i])
+                    {
+                        if (item == romaji)
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (index == 0)
+                {
+                    imgUnvoicedHiragana.Add(romaji, Image.FromFile(file));
+                }
+                else if (index == 1)
+                {
+                    imgVoicedHiragana.Add(romaji, Image.FromFile(file));
+                }
+                else if (index == 2)
+                {
+                    imgSemiVoicedHiragana.Add(romaji, Image.FromFile(file));
+                }
+            }
+            else if (name.EndsWith('2'))
+            {
+                for (int i = 0; i < temp.Count; i++)
+                {
+                    foreach (var item in temp[i])
+                    {
+                        if (item == romaji)
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (index == 0)
+                {
+                    imgUnvoicedKatakana.Add(romaji, Image.FromFile(file));
+                }
+                else if (index == 1)
+                {
+                    imgVoicedKatakana.Add(romaji, Image.FromFile(file));
+                }
+                else if (index == 2)
+                {
+                    imgSemiVoicedKatakana.Add(romaji, Image.FromFile(file));
+                }
+            }
         }
 
         private async void LoadImages()
@@ -33,11 +110,15 @@ namespace TheHelperOfTheKana
 
                 foreach (var file in files)
                 {
-                    if (!images.ContainsKey(file))
-                    {
-                        images[file] = Image.FromFile(file);
-                    }
+                    AddImageToProperDictionary(file);
+
+                    //if (!images.ContainsKey(file))
+                    //{
+                    //    images[file] = Image.FromFile(file);
+                    //}
                 }
+
+                UpdateRomajiRange();
 
                 imagesPath = new List<string>(images.Keys);
 
@@ -94,6 +175,23 @@ namespace TheHelperOfTheKana
             }
 
             ExtractRomaji(imagesPath[index]);
+        }
+
+        private string ExtractRomajiFromName(string name)
+        {
+            string pattern = @"([a-zA-Z]+)(\d+)";
+            Match match = Regex.Match(name, pattern);
+            if (match.Success)
+            {
+                var romaji = match.Groups[1].Value;
+                Debug.WriteLine("罗马字部分: " + romaji);
+                return romaji;
+            }
+            else
+            {
+                Debug.WriteLine("提取罗马字失败！");
+                return name;
+            }
         }
 
         private void ExtractRomaji(string input)
@@ -214,7 +312,6 @@ namespace TheHelperOfTheKana
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            // 检查是否按下 F5 键
             if (keyData == Keys.Left)
             {
                 BTN_Yes.PerformClick();
@@ -236,6 +333,81 @@ namespace TheHelperOfTheKana
                 return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void UpdateRomajiRange()
+        {
+            bool unvoiced = CB_Unvoiced.Checked;
+            bool semiVoiced = CB_SemiVoiced.Checked;
+            bool voiced = CB_Voiced.Checked;
+
+            if (unvoiced && !semiVoiced && !voiced)
+            {
+                allRomaji = unvoicedRomaji;
+            }
+            else if (!unvoiced && semiVoiced && !voiced)
+            {
+                allRomaji = semiVoicedRomaji;
+            }
+            else if (!unvoiced && !semiVoiced && voiced)
+            {
+                allRomaji = voicedRomaji;
+            }
+            else if (!unvoiced && semiVoiced && voiced)
+            {
+                allRomaji = allVoicedRomaji;
+            }
+            else if (unvoiced && semiVoiced && !voiced)
+            {
+                allRomaji = [.. unvoicedRomaji, .. semiVoicedRomaji];
+            }
+            else if (unvoiced && !semiVoiced && voiced)
+            {
+                allRomaji = [.. unvoicedRomaji, .. voicedRomaji];
+            }
+            else if (unvoiced && semiVoiced && voiced)
+            {
+                allRomaji = [.. unvoicedRomaji, .. allVoicedRomaji];
+            }
+            else
+            {
+                allRomaji = unvoicedRomaji;
+            }
+        }
+
+        private void CB_Unvoiced_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateRomajiRange();
+        }
+
+        private void CB_SemiVoiced_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateRomajiRange();
+        }
+
+        private void CB_Voiced_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateRomajiRange();
+        }
+
+        private void UpdateKanaRange()
+        {
+
+        }
+
+        private void RB_Hiragana_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateKanaRange();
+        }
+
+        private void RB_Katakana_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateKanaRange();
+        }
+
+        private void RB_All_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateKanaRange();
         }
     }
 }

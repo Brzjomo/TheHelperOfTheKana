@@ -36,6 +36,14 @@
             BTN_Yes = new Button();
             PB_1 = new PictureBox();
             tabPage2 = new TabPage();
+            groupBox3 = new GroupBox();
+            CB_Voiced = new CheckBox();
+            CB_SemiVoiced = new CheckBox();
+            CB_Unvoiced = new CheckBox();
+            groupBox2 = new GroupBox();
+            RB_All = new RadioButton();
+            RB_Katakana = new RadioButton();
+            RB_Hiragana = new RadioButton();
             groupBox1 = new GroupBox();
             RB_NotHideImage = new RadioButton();
             RB_HideImage = new RadioButton();
@@ -46,6 +54,8 @@
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)PB_1).BeginInit();
             tabPage2.SuspendLayout();
+            groupBox3.SuspendLayout();
+            groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             tabPage3.SuspendLayout();
             SuspendLayout();
@@ -137,14 +147,109 @@
             // 
             // tabPage2
             // 
+            tabPage2.Controls.Add(groupBox3);
+            tabPage2.Controls.Add(groupBox2);
             tabPage2.Controls.Add(groupBox1);
-            tabPage2.Location = new Point(4, 26);
+            tabPage2.Location = new Point(4, 30);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(405, 485);
+            tabPage2.Size = new Size(405, 481);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "设置";
             tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // groupBox3
+            // 
+            groupBox3.Controls.Add(CB_Voiced);
+            groupBox3.Controls.Add(CB_SemiVoiced);
+            groupBox3.Controls.Add(CB_Unvoiced);
+            groupBox3.Location = new Point(30, 156);
+            groupBox3.Name = "groupBox3";
+            groupBox3.Size = new Size(344, 61);
+            groupBox3.TabIndex = 5;
+            groupBox3.TabStop = false;
+            groupBox3.Text = "显示种类";
+            // 
+            // CB_Voiced
+            // 
+            CB_Voiced.AutoSize = true;
+            CB_Voiced.Location = new Point(242, 27);
+            CB_Voiced.Name = "CB_Voiced";
+            CB_Voiced.Size = new Size(61, 25);
+            CB_Voiced.TabIndex = 8;
+            CB_Voiced.Text = "浊音";
+            CB_Voiced.UseVisualStyleBackColor = true;
+            CB_Voiced.CheckedChanged += CB_Voiced_CheckedChanged;
+            // 
+            // CB_SemiVoiced
+            // 
+            CB_SemiVoiced.AutoSize = true;
+            CB_SemiVoiced.Location = new Point(133, 27);
+            CB_SemiVoiced.Name = "CB_SemiVoiced";
+            CB_SemiVoiced.Size = new Size(77, 25);
+            CB_SemiVoiced.TabIndex = 7;
+            CB_SemiVoiced.Text = "半浊音";
+            CB_SemiVoiced.UseVisualStyleBackColor = true;
+            CB_SemiVoiced.CheckedChanged += CB_SemiVoiced_CheckedChanged;
+            // 
+            // CB_Unvoiced
+            // 
+            CB_Unvoiced.AutoSize = true;
+            CB_Unvoiced.Location = new Point(30, 27);
+            CB_Unvoiced.Name = "CB_Unvoiced";
+            CB_Unvoiced.Size = new Size(61, 25);
+            CB_Unvoiced.TabIndex = 6;
+            CB_Unvoiced.Text = "清音";
+            CB_Unvoiced.UseVisualStyleBackColor = true;
+            CB_Unvoiced.CheckedChanged += CB_Unvoiced_CheckedChanged;
+            // 
+            // groupBox2
+            // 
+            groupBox2.Controls.Add(RB_All);
+            groupBox2.Controls.Add(RB_Katakana);
+            groupBox2.Controls.Add(RB_Hiragana);
+            groupBox2.Location = new Point(30, 89);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new Size(344, 61);
+            groupBox2.TabIndex = 4;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "显示假名:";
+            // 
+            // RB_All
+            // 
+            RB_All.AutoSize = true;
+            RB_All.Location = new Point(243, 27);
+            RB_All.Name = "RB_All";
+            RB_All.Size = new Size(60, 25);
+            RB_All.TabIndex = 4;
+            RB_All.TabStop = true;
+            RB_All.Text = "全部";
+            RB_All.UseVisualStyleBackColor = true;
+            RB_All.CheckedChanged += RB_All_CheckedChanged;
+            // 
+            // RB_Katakana
+            // 
+            RB_Katakana.AutoSize = true;
+            RB_Katakana.Location = new Point(134, 27);
+            RB_Katakana.Name = "RB_Katakana";
+            RB_Katakana.Size = new Size(76, 25);
+            RB_Katakana.TabIndex = 3;
+            RB_Katakana.TabStop = true;
+            RB_Katakana.Text = "片假名";
+            RB_Katakana.UseVisualStyleBackColor = true;
+            RB_Katakana.CheckedChanged += RB_Katakana_CheckedChanged;
+            // 
+            // RB_Hiragana
+            // 
+            RB_Hiragana.AutoSize = true;
+            RB_Hiragana.Location = new Point(31, 27);
+            RB_Hiragana.Name = "RB_Hiragana";
+            RB_Hiragana.Size = new Size(76, 25);
+            RB_Hiragana.TabIndex = 2;
+            RB_Hiragana.TabStop = true;
+            RB_Hiragana.Text = "平假名";
+            RB_Hiragana.UseVisualStyleBackColor = true;
+            RB_Hiragana.CheckedChanged += RB_Hiragana_CheckedChanged;
             // 
             // groupBox1
             // 
@@ -228,6 +333,10 @@
             tabPage1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)PB_1).EndInit();
             tabPage2.ResumeLayout(false);
+            groupBox3.ResumeLayout(false);
+            groupBox3.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             tabPage3.ResumeLayout(false);
@@ -251,5 +360,13 @@
         private GroupBox groupBox1;
         private RadioButton RB_NotHideImage;
         private RadioButton RB_HideImage;
+        private GroupBox groupBox2;
+        private RadioButton RB_Katakana;
+        private RadioButton RB_Hiragana;
+        private GroupBox groupBox3;
+        private RadioButton RB_All;
+        private CheckBox CB_Voiced;
+        private CheckBox CB_SemiVoiced;
+        private CheckBox CB_Unvoiced;
     }
 }
