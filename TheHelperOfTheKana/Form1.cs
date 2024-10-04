@@ -1,13 +1,14 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace TheHelperOfTheKana
 {
     public partial class Form1 : Form
     {
         private const string path = "assets";
-        private List<string> imagesPath = [];
         private int lastImageIndex = -1;
+        private Dictionary<int, Image> currentKana = [];
         private int score = 0;
         private int topScore = 0;
         private bool hideImage = false;
@@ -25,6 +26,9 @@ namespace TheHelperOfTheKana
         private Dictionary<string, Image> imgVoicedKatakana = [];
         private Dictionary<string, Image> imgSemiVoicedHiragana = [];
         private Dictionary<string, Image> imgSemiVoicedKatakana = [];
+        private List<Dictionary<string, Image>> hiraganaDirectories = [];
+        private List<Dictionary<string, Image>> katakanaDirectories = [];
+        private List<Dictionary<string, Image>> allDirectories = [];
 
         public Form1()
         {
@@ -111,18 +115,15 @@ namespace TheHelperOfTheKana
                 foreach (var file in files)
                 {
                     AddImageToProperDictionary(file);
-
-                    //if (!images.ContainsKey(file))
-                    //{
-                    //    images[file] = Image.FromFile(file);
-                    //}
                 }
 
+                hiraganaDirectories = [imgUnvoicedHiragana, imgVoicedHiragana, imgSemiVoicedHiragana];
+                katakanaDirectories = [imgUnvoicedKatakana, imgVoicedKatakana, imgSemiVoicedKatakana];
+
                 UpdateRomajiRange();
+                UpdateKanaRange();
 
-                imagesPath = new List<string>(images.Keys);
-
-                await LoadRandomImage();
+                await LoadRandomImage(allRomaji);
             }
             else
             {
@@ -130,51 +131,78 @@ namespace TheHelperOfTheKana
             }
         }
 
-        private Task LoadImage(string path)
+        private async Task LoadRandomImage(List<string> romajiList)
         {
-            if (images.ContainsKey(path))
-            {
-                PB_1.Image = images[path];
-            }
-            else
-            {
-                MessageBox.Show($"不存在文件{path}，请检查后重试！", "文件不存在", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private int GetRandomIndex()
-        {
-            byte[] buffer = Guid.NewGuid().ToByteArray();
-            int iSeed = BitConverter.ToInt32(buffer, 0);
-            Random random = new Random(iSeed);
-
-            int imgCount = imagesPath.Count;
-            var index = random.Next(imgCount);
-
-            return index;
-        }
-
-        private async Task LoadRandomImage()
-        {
-            var index = GetRandomIndex();
+            var index = GetRandomIndex(romajiList.Count);
             while (index == lastImageIndex)
             {
-                index = GetRandomIndex();
+                index = GetRandomIndex(romajiList.Count);
             }
             lastImageIndex = index;
 
+            var key = romajiList[index];
+
             if (RB_NotHideImage.Checked)
             {
-                await LoadImage(imagesPath[index]);
+                await LoadImage(key);
             }
             else
             {
                 PB_1.Image = null;
             }
 
-            ExtractRomaji(imagesPath[index]);
+            UpdateRomaji(key);
+        }
+
+        private int GetRandomIndex(int maxValue)
+        {
+            byte[] buffer = Guid.NewGuid().ToByteArray();
+            int iSeed = BitConverter.ToInt32(buffer, 0);
+            Random random = new(iSeed);
+
+            var index = random.Next(maxValue);
+
+            return index;
+        }
+
+        private Task LoadImage(string key)
+        {
+            if (RB_All.Checked)
+            {
+                allDirectories = GetRandomDirectories();
+            }
+
+            foreach (var dict in allDirectories)
+            {
+                if (dict.TryGetValue(key, out var img) && !currentKana.ContainsKey(type))
+                {
+                    currentKana.Add(type, img);
+                    PB_1.Image = img;
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private List<Dictionary<string, Image>> GetRandomDirectories()
+        {
+            var index = GetRandomIndex(2);
+            switch (index)
+            {
+                case 0:
+                    type = 1;
+                    return hiraganaDirectories;
+                case 1:
+                    type = 2;
+                    return katakanaDirectories;
+            }
+
+            return hiraganaDirectories;
+        }
+
+        private void UpdateRomaji(string romaji)
+        {
+            LB_Romaji.Text = romaji;
         }
 
         private string ExtractRomajiFromName(string name)
@@ -184,7 +212,6 @@ namespace TheHelperOfTheKana
             if (match.Success)
             {
                 var romaji = match.Groups[1].Value;
-                Debug.WriteLine("罗马字部分: " + romaji);
                 return romaji;
             }
             else
@@ -194,40 +221,9 @@ namespace TheHelperOfTheKana
             }
         }
 
-        private void ExtractRomaji(string input)
-        {
-            string pattern = @"\\(\w+)\.";
-            Match match = Regex.Match(input, pattern);
-            if (match.Success)
-            {
-                var romaji = match.Groups[1].Value;
-                string pattern2 = @"([a-zA-Z]+)(\d+)";
-                Match match2 = Regex.Match(romaji, pattern2);
-                if (match2.Success)
-                {
-                    romaji = match2.Groups[1].Value;
-                    string numberPart = match2.Groups[2].Value;
-                    int.TryParse(numberPart, out type);
-
-                    Debug.WriteLine("罗马字部分: " + romaji);
-                    Debug.WriteLine("数字部分: " + type);
-
-                    LB_Romaji.Text = romaji;
-                }
-            }
-        }
-
         private void UpdateScore()
         {
-            if (score == 100)
-            {
-                LB_Score.Text = score.ToString();
-                MessageBox.Show("恭喜！达到目标分数！", "达成目标", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                LB_Score.Text = score.ToString();
-            }
+            LB_Score.Text = score.ToString();
 
             if (topScore < score)
             {
@@ -238,16 +234,20 @@ namespace TheHelperOfTheKana
 
         private async void BT_Yes_Click(object sender, EventArgs e)
         {
+            currentKana.Clear();
+            UpdateKanaRange();
             score += 1;
             UpdateScore();
-            await LoadRandomImage();
+            await LoadRandomImage(allRomaji);
         }
 
         private async void BTN_No_Click(object sender, EventArgs e)
         {
+            currentKana.Clear();
+            UpdateKanaRange();
             score -= 1;
             UpdateScore();
-            await LoadRandomImage();
+            await LoadRandomImage(allRomaji);
         }
 
         private void LB_Score_Click(object sender, EventArgs e)
@@ -268,8 +268,11 @@ namespace TheHelperOfTheKana
             }
             else
             {
-                LoadImage(imagesPath[lastImageIndex]);
-                hideImage = false;
+                if (currentKana.TryGetValue(type, out Image? img))
+                {
+                    PB_1.Image = img;
+                    hideImage = false;
+                }
             }
         }
 
@@ -283,31 +286,35 @@ namespace TheHelperOfTheKana
 
         private void LB_Romaji_Click(object sender, EventArgs e)
         {
-            string oldPath = imagesPath[lastImageIndex];
-            string[] temp = oldPath.Split('.');
-            var extension = "." + temp[^1];
-
             var romaji = LB_Romaji.Text;
-            switch (type)
+            if (type == 1)
             {
-                case 1:
-                    type = 2;
-                    break;
-                case 2:
-                    type = 1;
-                    break;
-            }
-            string imagePath = path + "\\" + romaji + type + extension;
-            if (RB_NotHideImage.Checked)
-            {
-                LoadImage(imagePath);
-            }
-            else
-            {
-                PB_1.Image = null;
-            }
+                type = 2;
 
-            lastImageIndex = imagesPath.IndexOf(imagePath);
+                if (currentKana.TryGetValue(type, out Image? img))
+                {
+                    PB_1.Image = img;
+                }
+                else
+                {
+                    allDirectories = katakanaDirectories;
+                    LoadImage(romaji);
+                }
+            }
+            else if (type == 2)
+            {
+                type = 1;
+
+                if (currentKana.TryGetValue(type, out Image? img))
+                {
+                    PB_1.Image = img;
+                }
+                else
+                {
+                    allDirectories = hiraganaDirectories;
+                    LoadImage(romaji);
+                }
+            }
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -373,6 +380,8 @@ namespace TheHelperOfTheKana
             {
                 allRomaji = unvoicedRomaji;
             }
+
+            lastImageIndex = -1;
         }
 
         private void CB_Unvoiced_CheckedChanged(object sender, EventArgs e)
@@ -392,7 +401,24 @@ namespace TheHelperOfTheKana
 
         private void UpdateKanaRange()
         {
+            bool hiragana = RB_Hiragana.Checked;
+            bool katakana = RB_Katakana.Checked;
+            bool all = RB_All.Checked;
 
+            if (all)
+            {
+                allDirectories = GetRandomDirectories();
+            }
+            else if (hiragana)
+            {
+                allDirectories = hiraganaDirectories;
+                type = 1;
+            }
+            else if (katakana)
+            {
+                allDirectories = katakanaDirectories;
+                type = 2;
+            }
         }
 
         private void RB_Hiragana_CheckedChanged(object sender, EventArgs e)
